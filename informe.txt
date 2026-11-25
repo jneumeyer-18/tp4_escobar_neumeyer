@@ -1,0 +1,148 @@
+Informe
+Escobar, Neumeyer
+Trabajo Practico 4 - Algoritmos y estructura de datos.
+ 
+    1. ¿Cuántas componentes conexas tiene el grafo? ¿Cuál es el tamaño de la más grande? ¿Qué ciudades
+    quedan fuera de ella? ¿Tiene sentido, mirando un mapa?
+
+=== Ejercicio 1 ===
+Componentes conexas: 4
+Tamaño de la más grande: 272
+Ciudades fuera de la más grande:
+  Componente 1: Río Grande; Tolhuin; Ushuaia;
+  Componente 2: Puerto Argentino; Puerto Darwin; Bahía Zorro;
+  Componente 3: Martín García;
+ 
+El algoritmo que implementamos fue el BFS. Recorremos las ciudades en orden y, cada vez que encontramos 
+una que todavía no fue visitada, hacemos un BFS desde ella, a todo lo que llega forma una componente. 
+El orden es O(n + m), porque cada ciudad entra una sola vez a la cola y cada ruta se revisa una vez por 
+cada sentido.
+ 
+Mirando un mapa tiene sentido, ya que las ciudades continentales están conectadas entre sí, pero las 
+islas forman otras componentes conexas porque están separadas por agua de la masa continental, 
+entonces no se pueden conectar por tierra con las otras ciudades.
+
+    2. Calcular las distancias del camino mínimo entre todos los pares de ciudades, teniendo en cuenta 
+    los pesos de las aristas: la longitud de un camino es la suma de las distancias de sus rutas.
+    • ¿Qué algoritmo usaron? ¿Qué orden tiene calcular todas las distancias?
+    • ¿Por qué BFS no alcanza para este problema?
+    • ¿Cuál es la distancia mínima entre Buenos Aires y La Quiaca? ¿Y entre Buenos Aires y Ushuaia?
+ 
+Usamos el algoritmo de Dijkstra, que se puede usar porque todas las distancias son no negativas. 
+Primero calculamos la componente conexa de cada ciudad con BFS (como en el ejercicio 1).
+Después corremos Dijkstra desde cada ciudad, mirando sólo las ciudades de su misma componente.
+Cada Dijkstra, buscando en cada paso la ciudad más cercana con un recorrido de todas las ciudades, 
+tiene orden O(n^2 + m), siendo n la cantidad de ciudades y m la cantidad de rutas. 
+Como para tener todas las distancias lo corremos desde cada una de las n ciudades, calcular todas las 
+distancias tiene orden O(n · (n^2 + m)) = O(n^3).
+
+BFS no alcanza para este problema porque ese algoritmo calcula el camino con la menor cantidad de rutas, 
+sin importar si es más largo o no en kilómetros, y el camino con menos tramos no siempre es el más corto. 
+En cambio, Dijkstra encuentra el camino más corto sumando los kilómetros de cada ruta. 
+
+=== Ejercicio 2 ===
+Buenos Aires - La Quiaca: 1943 km
+Buenos Aires - Ushuaia: no hay camino (están en componentes distintas)
+ 
+    3. ¿Cuántos triángulos tiene el grafo? Cada triángulo se cuenta una sola vez: {A, B, C} y {B, C, A} 
+    son el mismo. ¿Qué orden tiene el algoritmo?
+
+=== Ejercicio 3 ===
+Triángulos: 2281
+ 
+Para contarlos nos paramos en cada ciudad A, recorremos todos los pares de sus vecinos (B, C) y, si B 
+y C también están unidas por una ruta, sumamos un triángulo. Cuando terminamos con a, la "borramos" 
+(la marcamos como procesada y la salteamos de ahí en adelante), así cada triángulo se cuenta una sola vez.
+El orden es O(n^3) en el peor caso, ya que para cada una de las n ciudades recorremos todos los pares de 
+sus vecinos, o sea n ciudades x hasta n^2 pares de vecinos cada una (chequear si dos vecinos están unidos 
+por una ruta es O(1), porque usamos una tabla de hash). Como generalmente el costo depende del grado, 
+o sea O(m · dmax), siendo dmax la mayor cantidad de vecinos de una ciudad. 
+En nuestro grafo cada ciudad tiene como máximo 15 vecinos, así que el costo sería mucho menor que n^3.
+ 
+    4. Utilicen el ejercicio 2 para calcular el diámetro del grafo, en km. ¿Entre qué dos ciudades se da? 
+    ¿Qué hacen con los pares de ciudades que no están conectadas por ningún camino?
+
+=== Ejercicio 4 === 
+Diámetro: 4131 km, entre La Quiaca y Veintiocho de Noviembre
+ 
+Para calcularlo buscamos el máximo de las distancias mínimas del ejercicio 2.
+Con los pares de ciudades que no están conectadas por ningún camino, nosotros los ignoramos y no los 
+tuvimos en cuenta para calcular el diámetro, ya que si no los ignorábamos nos iba a dar infinito, 
+porque INFINITO es el número más grande de la matriz de distancias, y como no existe ningún camino entre 
+ellos, no hay nada que medir, porque no existe distancia mínima.
+ 
+    5. Hagan muchos random walks (por ejemplo, 10 000 walks de largo 100) y cuenten cuántas veces aparece 
+    cada ciudad en total. Las que más aparecen son las más centrales.
+    • ¿Cuáles son las 10 ciudades más centrales según este criterio?
+    • Compárenlas con las 10 ciudades de mayor grado. ¿Qué observan? ¿Por qué creen que pasa?
+    • Cambien el random walk para que el vecino se elija con probabilidad inversamente proporcional a la 
+    distancia: las rutas cortas son más probables que las largas. ¿Cambia el resultado?
+ 
+Hicimos 10.000 random walks de largo 100. Cada walk empieza en una ciudad elegida al azar y en cada paso 
+se mueve a un vecino elegido al azar, todos con la misma probabilidad (puede volver a la ciudad de la que 
+viene). Contamos la ciudad de partida y cada ciudad a la que se llega. Si el walk empieza en una ciudad 
+sin rutas (Martín García), no se puede mover y termina ahí. Usamos una numero fijo (42) para que el 
+resultado sea siempre el mismo.
+ 
+=== Ejercicio 5 ===
+Las 10 más visitadas (random walk uniforme):
+  1. Alta Gracia: 5581 visitas (grado 15)
+  2. Aguilares: 5434 visitas (grado 15)
+  3. General San Martín (Chaco): 5079 visitas (grado 13)
+  4. Cutral Có: 4912 visitas (grado 13)
+  5. Mina Clavero: 4854 visitas (grado 13)
+  6. Concepción: 4846 visitas (grado 13)
+  7. Villa General Belgrano: 4775 visitas (grado 13)
+  8. Palpalá: 4646 visitas (grado 13)
+  9. La Paz (Entre Ríos): 4628 visitas (grado 12)
+  10. Gobernador Gregores: 4615 visitas (grado 12) 
+Las 10 más visitadas (random walk por distancia):
+  1. Viedma: 17855 visitas (grado 10)
+  2. Carmen de Patagones: 17692 visitas (grado 8)
+  3. Cipolletti: 8794 visitas (grado 10)
+  4. Neuquén: 8783 visitas (grado 11)
+  5. Concepción: 8163 visitas (grado 13)
+  6. Aguilares: 7807 visitas (grado 15)
+  7. Palpalá: 7787 visitas (grado 13)
+  8. Villa Carlos Paz: 7526 visitas (grado 12)
+  9. Cosquín: 7514 visitas (grado 11)
+  10. San Salvador de Jujuy: 7342 visitas (grado 12)
+Las 10 de mayor grado:
+  1. Alta Gracia: grado 15
+  2. Aguilares: grado 15
+  3. Mina Clavero: grado 13
+  4. Villa General Belgrano: grado 13
+  5. General San Martín (Chaco): grado 13
+  6. Concepción: grado 13
+  7. Palpalá: grado 13
+  8. San Pedro de Jujuy: grado 13
+  9. Libertador General San Martín: grado 13
+  10. Purmamarca: grado 13
+ 
+Comparándolas con las ciudades de mayor grado, observamos que la mayoría de las ciudades de mayor grado 
+son las más centrales según este criterio. Creemos que pasa debido a que, al tener más vecinos, hay más 
+caminos para acceder a dicha ciudad, entonces, como el recorrido es aleatorio, terminan siendo las 
+ciudades más visitadas, ya que desde muchos lugares se puede ir a las ciudades de mayor grado. 
+No coinciden exactamente porque los walks son aleatorios y porque hay muchas ciudades empatadas con 
+grado 13.
+ 
+El resultado cambia mucho, ya que las ciudades que tienen una distancia muy corta entre sí terminan 
+siendo las más visitadas, porque la probabilidad de usar esa ruta es mucho mayor.
+ 
+    6. Analisis libre
+Para nuestro análisis libre del grafo, lo que quisimos hacer fue determinar la cantidad mínima de 
+colores necesarios para colorear las ciudades del grafo, de manera tal que dos ciudades conectadas 
+por una ruta directa no reciban el mismo color. Para eso, aplicamos el algoritmo greedy: recorremos 
+las ciudades de mayor a menor grado y a cada una le damos el color más chico que no use ninguno de 
+sus vecinos. 
+Obtuvimos estos resultados:
+
+=== Ejercicio 6 ===
+Coloreo: ciudades unidas por una ruta no pueden tener el mismo color
+Greedy (de mayor a menor grado): 9 colores
+Las 9 ciudades de Misiones están todas conectadas entre sí, así que con menos de 9 colores es imposible.
+Conclusión: el mínimo es exactamente 9 colores.
+ 
+El greedy sólo demuestra que con 9 colores alcanza, pero no que sea el mínimo. Para saber que 9 es el 
+mínimo usamos las 9 ciudades de Misiones, ya que como todas tienen ruta con todas, cada una necesita un 
+color distinto, así que con menos de 9 es imposible. Juntando las dos cosas, el mínimo es exactamente 9.

@@ -94,8 +94,8 @@ vector<vector<string>> componentesConexas(const GrafoCiudades& g) {
     for (int i = 0; i < n; i++) {
         if (visitado[i]) continue;
 
-        // Empieza una componente nueva: BFS desde la ciudad i.
-        // La cola es un vector común; 'frente' marca cuál toca procesar.
+        // Empieza el bfs en i
+        // frente es el que toca
         vector<string> cola;
         cola.push_back(ciudades[i]);
         visitado[i] = true;
@@ -115,11 +115,10 @@ vector<vector<string>> componentesConexas(const GrafoCiudades& g) {
             }
         }
 
-        // Todo lo que pasó por la cola es la componente
         componentes.push_back(cola);
     }
 
-    // Buscar la componente más grande
+    // buscar la mayor
     int mayor = 0;
     for (int i = 1; i < (int)componentes.size(); i++) {
         if (componentes[i].size() > componentes[mayor].size()) mayor = i;
@@ -152,10 +151,6 @@ const int INFINITO = 1000000000;
 vector<vector<int>> distanciasTodosConTodos(const GrafoCiudades& g) {
     vector<string> ciudades = g.get_vertices();
     int n = (int)ciudades.size();
-
-    // ---------- 1. Vecinos y distancias de cada ciudad, con índices ----------
-    // vecino[i][j] = índice del j-ésimo vecino de la ciudad i
-    // peso[i][j]   = km de la ruta entre i y ese vecino
     vector<vector<int>> vecino(n);
     vector<vector<int>> peso(n);
     for (int i = 0; i < n; i++) {
@@ -166,8 +161,7 @@ vector<vector<int>> distanciasTodosConTodos(const GrafoCiudades& g) {
         }
     }
 
-    // ---------- 2. Componente conexa de cada ciudad (BFS como en el ej. 1) ----------
-    // comp[i] = número de componente de la ciudad i
+ 
     vector<int> comp(n, -1);
     int c = 0;
     for (int i = 0; i < n; i++) {
@@ -190,7 +184,7 @@ vector<vector<int>> distanciasTodosConTodos(const GrafoCiudades& g) {
         c++;
     }
 
-    // ---------- 3. Dijkstra desde cada ciudad ----------
+    // ahora hacemos el dijkstra
     vector<vector<int>> dist(n, vector<int>(n, INFINITO));
 
     for (int s = 0; s < n; s++) {
@@ -198,19 +192,16 @@ vector<vector<int>> distanciasTodosConTodos(const GrafoCiudades& g) {
         dist[s][s] = 0;
 
         while (true) {
-            // Elegir, entre las ciudades de la MISMA componente que s que no
-            // están listas, la de menor distancia. Las de otra componente no
-            // se miran: no hay camino, quedan en INFINITO.
+
             int u = -1;
             for (int v = 0; v < n; v++) {
                 if (listo[v] == 1) continue;
                 if (comp[v] != comp[s]) continue;
                 if (u == -1 || dist[s][v] < dist[s][u]) u = v;
             }
-            if (u == -1) break;  // ya procesé toda la componente
+            if (u == -1) break;  
             listo[u] = 1;
 
-            // Relajar: ¿llego más corto a algún vecino pasando por u?
             for (int j = 0; j < (int)vecino[u].size(); j++) {
                 int v = vecino[u][j];
                 if (dist[s][u] + peso[u][j] < dist[s][v]) {
@@ -220,7 +211,7 @@ vector<vector<int>> distanciasTodosConTodos(const GrafoCiudades& g) {
         }
     }
 
-    // ---------- 4. Distancias pedidas ----------
+    
     int ba = indiceDe(g, "Buenos Aires");
     int lq = indiceDe(g, "La Quiaca");
     int us = indiceDe(g, "Ushuaia");
@@ -248,7 +239,6 @@ int contarTriangulos(const GrafoCiudades& g) {
     vector<string> ciudades = g.get_vertices();
     int n = (int)ciudades.size();
 
-    // Listas de adyacencia con índices: vecino[i] = índices de los vecinos de i
     vector<vector<int>> vecino(n);
     for (int i = 0; i < n; i++) {
         vector<string> vecinos = g.get_neighbors(ciudades[i]);
@@ -257,29 +247,28 @@ int contarTriangulos(const GrafoCiudades& g) {
         }
     }
 
-    // Idea: me paro en una ciudad a, cuento todos los triángulos que la
-    // contienen (pares de vecinos b, c que además son vecinos entre sí) y
-    // después "borro" a, para que ningún triángulo se vuelva a contar.
-    vector<int> borrado(n, 0);  // borrado[i] == 1: la ciudad i ya fue procesada
+    // Idea: me paro en a y cuento todos los triángulos que la contienen
+    // después borro a, para que ningún triángulo se vuelva a contar
+    vector<int> borrado(n, 0);  
     int triangulos = 0;
 
     for (int a = 0; a < n; a++) {
-        // Recorro los pares de vecinos (b, c) de a, cada par una sola vez (j < k)
+        // Recorro los pares de vecinos (b, c) de a
         for (int j = 0; j < (int)vecino[a].size(); j++) {
             int b = vecino[a][j];
-            if (borrado[b] == 1) continue;  // b ya se borró: sus triángulos ya se contaron
+            if (borrado[b] == 1) continue; 
 
             for (int k = j + 1; k < (int)vecino[a].size(); k++) {
                 int c = vecino[a][k];
                 if (borrado[c] == 1) continue;
 
-                // a-b y a-c son aristas; si b-c también, es un triángulo
+               
                 if (g.edge_exists(ciudades[b], ciudades[c])) {
                     triangulos++;
                 }
             }
         }
-        borrado[a] = 1;  // "borro" a del grafo
+        borrado[a] = 1;  
     }
     return triangulos;
 }
@@ -299,14 +288,13 @@ Diametro diametro(const GrafoCiudades& g, const vector<vector<int>>& dist) {
     vector<string> ciudades = g.get_vertices();
     int n = (int)ciudades.size();
 
-    // Busco el máximo de dist[i][j] entre todos los pares de ciudades.
-    // Los pares sin camino (INFINITO) no cuentan: no tienen distancia mínima.
+
     int mayor = 0;
     int c1 = 0;
     int c2 = 0;
     for (int i = 0; i < n; i++) {
-        for (int j = i + 1; j < n; j++) {  // j > i: cada par una sola vez
-            if (dist[i][j] == INFINITO) continue;  // están en componentes distintas
+        for (int j = i + 1; j < n; j++) {  
+            if (dist[i][j] == INFINITO) continue;  // están en grafos distintos
             if (dist[i][j] > mayor) {
                 mayor = dist[i][j];
                 c1 = i;
@@ -315,7 +303,7 @@ Diametro diametro(const GrafoCiudades& g, const vector<vector<int>>& dist) {
         }
     }
 
-    // Armo el resultado usando la clase Diametro
+   
     Diametro resultado;
     resultado.distancia = mayor;
     resultado.ciudad1 = ciudades[c1];
@@ -331,13 +319,150 @@ Diametro diametro(const GrafoCiudades& g, const vector<vector<int>>& dist) {
 using Visitas = unordered_map<string, int>;
 
 Visitas randomWalks(const GrafoCiudades& g, int cantidad, int largo) {
-    // TODO: implementar
-    return {};
+    vector<string> ciudades = g.get_vertices();
+    int n = (int)ciudades.size();
+
+    
+    vector<vector<int>> vecino(n);
+    for (int i = 0; i < n; i++) {
+        vector<string> vecinos = g.get_neighbors(ciudades[i]);
+        for (int j = 0; j < (int)vecinos.size(); j++) {
+            vecino[i].push_back(indiceDe(g, vecinos[j]));
+        }
+    }
+
+    // Generador de números al azar, con semilla fija para que el resultado
+    // sea el mismo cada vez que corremos el programa.
+    mt19937 generador(42);
+
+    
+    vector<int> cuenta(n, 0);
+
+    for (int w = 0; w < cantidad; w++) {
+        // Ciudad de partida al azar: como random.randint(0, n - 1)
+        uniform_int_distribution<int> ciudadAlAzar(0, n - 1);
+        int actual = ciudadAlAzar(generador);
+        cuenta[actual]++;
+
+        for (int paso = 0; paso < largo; paso++) {
+            int grado = (int)vecino[actual].size();
+           
+            if (grado == 0) break;
+
+            // Elegir un vecino al azar, todos con la misma probabilidad:
+            // como random.randint(0, grado - 1)
+            uniform_int_distribution<int> elegir(0, grado - 1);
+            actual = vecino[actual][elegir(generador)];
+            cuenta[actual]++;
+        }
+    }
+
+    
+    vector<int> elegida(n, 0);
+    cout << "Las 10 más visitadas (random walk uniforme):\n";
+    for (int puesto = 1; puesto <= 10; puesto++) {
+        int mejor = -1;
+        for (int i = 0; i < n; i++) {
+            if (elegida[i] == 1) continue;
+            if (mejor == -1 || cuenta[i] > cuenta[mejor]) mejor = i;
+        }
+        elegida[mejor] = 1;
+        cout << "  " << puesto << ". " << ciudades[mejor] << ": " << cuenta[mejor]
+             << " visitas (grado " << vecino[mejor].size() << ")\n";
+    }
+
+    
+    Visitas visitas;
+    for (int i = 0; i < n; i++) {
+        visitas[ciudades[i]] = cuenta[i];
+    }
+    return visitas;
 }
 
 Visitas randomWalksPorDistancia(const GrafoCiudades& g, int cantidad, int largo) {
-    // TODO: implementar
-    return {};
+    vector<string> ciudades = g.get_vertices();
+    int n = (int)ciudades.size();
+
+    
+    vector<vector<int>> vecino(n);
+    vector<vector<int>> peso(n);
+    for (int i = 0; i < n; i++) {
+        vector<string> vecinos = g.get_neighbors(ciudades[i]);
+        for (int j = 0; j < (int)vecinos.size(); j++) {
+            vecino[i].push_back(indiceDe(g, vecinos[j]));
+            peso[i].push_back(*g.get_edge_data(ciudades[i], vecinos[j]));
+        }
+    }
+
+    mt19937 generador(42);
+
+    vector<int> cuenta(n, 0);
+
+    for (int w = 0; w < cantidad; w++) {
+        uniform_int_distribution<int> ciudadAlAzar(0, n - 1);
+        int actual = ciudadAlAzar(generador);
+        cuenta[actual]++;
+
+        for (int paso = 0; paso < largo; paso++) {
+            int grado = (int)vecino[actual].size();
+            if (grado == 0) break;
+
+            double total = 0;
+            for (int j = 0; j < grado; j++) {
+                total += 1.0 / peso[actual][j];
+            }
+
+            // Tiro un número real al azar entre 0 y total, y me fijo en qué
+            // "tramo" cae: cada vecino ocupa un tramo de largo 1 / km.
+            uniform_real_distribution<double> tiro(0.0, total);
+            double r = tiro(generador);
+
+            int elegido = grado - 1; 
+            double acumulado = 0;
+            for (int j = 0; j < grado; j++) {
+                acumulado += 1.0 / peso[actual][j];
+                if (r < acumulado) {
+                    elegido = j;
+                    break;
+                }
+            }
+
+            actual = vecino[actual][elegido];
+            cuenta[actual]++;
+        }
+    }
+
+    vector<int> elegida(n, 0);
+    cout << "Las 10 más visitadas (random walk por distancia):\n";
+    for (int puesto = 1; puesto <= 10; puesto++) {
+        int mejor = -1;
+        for (int i = 0; i < n; i++) {
+            if (elegida[i] == 1) continue;
+            if (mejor == -1 || cuenta[i] > cuenta[mejor]) mejor = i;
+        }
+        elegida[mejor] = 1;
+        cout << "  " << puesto << ". " << ciudades[mejor] << ": " << cuenta[mejor]
+             << " visitas (grado " << vecino[mejor].size() << ")\n";
+    }
+
+    vector<int> elegidaGrado(n, 0);
+    cout << "Las 10 de mayor grado:\n";
+    for (int puesto = 1; puesto <= 10; puesto++) {
+        int mejor = -1;
+        for (int i = 0; i < n; i++) {
+            if (elegidaGrado[i] == 1) continue;
+            if (mejor == -1 || vecino[i].size() > vecino[mejor].size()) mejor = i;
+        }
+        elegidaGrado[mejor] = 1;
+        cout << "  " << puesto << ". " << ciudades[mejor] << ": grado "
+             << vecino[mejor].size() << "\n";
+    }
+
+    Visitas visitas;
+    for (int i = 0; i < n; i++) {
+        visitas[ciudades[i]] = cuenta[i];
+    }
+    return visitas;
 }
 
 // ================================================================
@@ -345,8 +470,62 @@ Visitas randomWalksPorDistancia(const GrafoCiudades& g, int cantidad, int largo)
 // ================================================================
 
 void analisisLibre(const GrafoCiudades& g) {
-    // TODO: implementar
-    return;
+    vector<string> ciudades = g.get_vertices();
+    int n = (int)ciudades.size();
+
+    vector<vector<int>> vecino(n);
+    for (int i = 0; i < n; i++) {
+        vector<string> vecinos = g.get_neighbors(ciudades[i]);
+        for (int j = 0; j < (int)vecinos.size(); j++) {
+            vecino[i].push_back(indiceDe(g, vecinos[j]));
+        }
+    }
+
+    vector<int> orden;
+    for (int d = n; d >= 0; d--) {
+        for (int i = 0; i < n; i++) {
+            if ((int)vecino[i].size() == d) orden.push_back(i);
+        }
+    }
+
+    cout << "Coloreo: ciudades unidas por una ruta no pueden tener el mismo color\n";
+
+    // Greedy: a cada ciudad, el color más chico que no use ningún vecino
+    vector<int> color(n, -1);  // -1: todavía sin color
+    int coloresUsados = 0;
+    for (int k = 0; k < n; k++) {
+        int v = orden[k];
+        int c = 0;
+        bool libre = false;
+        while (!libre) {
+            libre = true;
+            for (int j = 0; j < (int)vecino[v].size(); j++) {
+                if (color[vecino[v][j]] == c) libre = false;
+            }
+            if (!libre) c++;
+        }
+        color[v] = c;
+        if (c + 1 > coloresUsados) coloresUsados = c + 1;
+    }
+    cout << "Greedy (de mayor a menor grado): " << coloresUsados << " colores\n";
+
+    // si las 9 de Misiones están todas conectadas necesitan 9 colores
+    vector<string> misiones = {"Posadas", "Oberá", "Eldorado", "Puerto Iguazú",
+                               "Apóstoles", "Leandro N. Alem", "San Vicente",
+                               "Puerto Rico", "Bernardo de Irigoyen"};
+    int m = (int)misiones.size();
+    bool todasConectadas = true;
+    for (int i = 0; i < m; i++) {
+        for (int j = i + 1; j < m; j++) {
+            if (!g.edge_exists(misiones[i], misiones[j])) todasConectadas = false;
+        }
+    }
+
+    if (todasConectadas && coloresUsados == m) {
+        cout << "Las " << m << " ciudades de Misiones están todas conectadas entre sí, "
+             << "así que con menos de " << m << " colores es imposible.\n";
+        cout << "Conclusión: el mínimo es exactamente " << m << " colores.\n";
+    }
 }
 
 // ================================================================
