@@ -118,24 +118,6 @@ vector<vector<string>> componentesConexas(const GrafoCiudades& g) {
         componentes.push_back(cola);
     }
 
-    // buscar la mayor
-    int mayor = 0;
-    for (int i = 1; i < (int)componentes.size(); i++) {
-        if (componentes[i].size() > componentes[mayor].size()) mayor = i;
-    }
-    cout << "Tamaño de la más grande: " << componentes[mayor].size() << "\n";
-
-    // Imprimir las ciudades de las demás componentes
-    cout << "Ciudades fuera de la más grande:\n";
-    for (int i = 0; i < (int)componentes.size(); i++) {
-        if (i == mayor) continue;
-        cout << "  Componente " << i << ":";
-        for (int j = 0; j < (int)componentes[i].size(); j++) {
-            cout << " " << componentes[i][j] << ";";
-        }
-        cout << "\n";
-    }
-
     return componentes;
 }
 
@@ -188,7 +170,7 @@ vector<vector<int>> distanciasTodosConTodos(const GrafoCiudades& g) {
     vector<vector<int>> dist(n, vector<int>(n, INFINITO));
 
     for (int s = 0; s < n; s++) {
-        vector<int> listo(n, 0);  // listo[v] == 1: ya sé la distancia mínima a v
+        vector<int> listo(n, 0); 
         dist[s][s] = 0;
 
         while (true) {
@@ -212,22 +194,7 @@ vector<vector<int>> distanciasTodosConTodos(const GrafoCiudades& g) {
     }
 
     
-    int ba = indiceDe(g, "Buenos Aires");
-    int lq = indiceDe(g, "La Quiaca");
-    int us = indiceDe(g, "Ushuaia");
-
-    if (comp[ba] != comp[lq]) {
-        cout << "Buenos Aires - La Quiaca: no hay camino (están en componentes distintas)\n";
-    } else {
-        cout << "Buenos Aires - La Quiaca: " << dist[ba][lq] << " km\n";
-    }
-
-    if (comp[ba] != comp[us]) {
-        cout << "Buenos Aires - Ushuaia: no hay camino (están en componentes distintas)\n";
-    } else {
-        cout << "Buenos Aires - Ushuaia: " << dist[ba][us] << " km\n";
-    }
-
+   
     return dist;
 }
 
@@ -358,20 +325,6 @@ Visitas randomWalks(const GrafoCiudades& g, int cantidad, int largo) {
     }
 
     
-    vector<int> elegida(n, 0);
-    cout << "Las 10 más visitadas (random walk uniforme):\n";
-    for (int puesto = 1; puesto <= 10; puesto++) {
-        int mejor = -1;
-        for (int i = 0; i < n; i++) {
-            if (elegida[i] == 1) continue;
-            if (mejor == -1 || cuenta[i] > cuenta[mejor]) mejor = i;
-        }
-        elegida[mejor] = 1;
-        cout << "  " << puesto << ". " << ciudades[mejor] << ": " << cuenta[mejor]
-             << " visitas (grado " << vecino[mejor].size() << ")\n";
-    }
-
-    
     Visitas visitas;
     for (int i = 0; i < n; i++) {
         visitas[ciudades[i]] = cuenta[i];
@@ -432,31 +385,9 @@ Visitas randomWalksPorDistancia(const GrafoCiudades& g, int cantidad, int largo)
         }
     }
 
-    vector<int> elegida(n, 0);
-    cout << "Las 10 más visitadas (random walk por distancia):\n";
-    for (int puesto = 1; puesto <= 10; puesto++) {
-        int mejor = -1;
-        for (int i = 0; i < n; i++) {
-            if (elegida[i] == 1) continue;
-            if (mejor == -1 || cuenta[i] > cuenta[mejor]) mejor = i;
-        }
-        elegida[mejor] = 1;
-        cout << "  " << puesto << ". " << ciudades[mejor] << ": " << cuenta[mejor]
-             << " visitas (grado " << vecino[mejor].size() << ")\n";
-    }
+    
 
-    vector<int> elegidaGrado(n, 0);
-    cout << "Las 10 de mayor grado:\n";
-    for (int puesto = 1; puesto <= 10; puesto++) {
-        int mejor = -1;
-        for (int i = 0; i < n; i++) {
-            if (elegidaGrado[i] == 1) continue;
-            if (mejor == -1 || vecino[i].size() > vecino[mejor].size()) mejor = i;
-        }
-        elegidaGrado[mejor] = 1;
-        cout << "  " << puesto << ". " << ciudades[mejor] << ": grado "
-             << vecino[mejor].size() << "\n";
-    }
+
 
     Visitas visitas;
     for (int i = 0; i < n; i++) {
@@ -528,6 +459,25 @@ void analisisLibre(const GrafoCiudades& g) {
     }
 }
 
+
+
+
+void imprimir10MasVisitadas(const GrafoCiudades& g, Visitas& visitas) {
+    vector<string> ciudades = g.get_vertices();
+    int n = (int)ciudades.size();
+    vector<int> elegida(n, 0);
+    for (int puesto = 1; puesto <= 10; puesto++) {
+        int mejor = -1;
+        for (int i = 0; i < n; i++) {
+            if (elegida[i] == 1) continue;
+            if (mejor == -1 || visitas[ciudades[i]] > visitas[ciudades[mejor]]) mejor = i;
+        }
+        elegida[mejor] = 1;
+        cout << "  " << puesto << ". " << ciudades[mejor] << ": "
+             << visitas[ciudades[mejor]] << " visitas (grado "
+             << g.get_neighbors(ciudades[mejor]).size() << ")\n";
+    }
+}
 // ================================================================
 //                              MAIN
 // ================================================================
@@ -544,11 +494,42 @@ int main(int argc, char* argv[]) {
     cout << "=== Ejercicio 1 ===\n";
     vector<vector<string>> componentes = componentesConexas(g);
     cout << "Componentes conexas: " << componentes.size() << "\n";
-    // TODO: tamaño de la más grande y ciudades que quedan fuera de ella
+    int mayor = 0;
+    for (int i = 1; i < (int)componentes.size(); i++) {
+        if (componentes[i].size() > componentes[mayor].size()) mayor = i;
+    }
+    cout << "Tamaño de la más grande: " << componentes[mayor].size() << "\n";
+
+    // Imprimir las ciudades de las demás componentes
+    cout << "Ciudades fuera de la más grande:\n";
+    for (int i = 0; i < (int)componentes.size(); i++) {
+        if (i == mayor) continue;
+        cout << "  Componente " << i << ":";
+        for (int j = 0; j < (int)componentes[i].size(); j++) {
+            cout << " " << componentes[i][j] << ";";
+        }
+        cout << "\n";
+    }
 
     cout << "\n=== Ejercicio 2 ===\n";
     vector<vector<int>> dist = distanciasTodosConTodos(g);
-    // TODO: distancias Buenos Aires - La Quiaca y Buenos Aires - Ushuaia
+
+    int ba = indiceDe(g, "Buenos Aires");
+    int lq = indiceDe(g, "La Quiaca");
+    int us = indiceDe(g, "Ushuaia");
+
+    if (dist[ba][lq] == INFINITO) {
+        cout << "Buenos Aires - La Quiaca: no hay camino (están en componentes distintas)\n";
+    } else {
+        cout << "Buenos Aires - La Quiaca: " << dist[ba][lq] << " km\n";
+    }
+
+    if (dist[ba][us] == INFINITO) {
+        cout << "Buenos Aires - Ushuaia: no hay camino (están en componentes distintas)\n";
+    } else {
+        cout << "Buenos Aires - Ushuaia: " << dist[ba][us] << " km\n";
+    }
+
 
     cout << "\n=== Ejercicio 3 ===\n";
     cout << "Triángulos: " << contarTriangulos(g) << "\n";
@@ -558,10 +539,33 @@ int main(int argc, char* argv[]) {
     cout << "Diámetro: " << d.distancia << " km, entre " << d.ciudad1 << " y "
               << d.ciudad2 << "\n";
 
-    cout << "\n=== Ejercicio 5 ===\n";
+     cout << "\n=== Ejercicio 5 ===\n";
     Visitas visitas = randomWalks(g, 10000, 100);
     Visitas visitasPorDistancia = randomWalksPorDistancia(g, 10000, 100);
-    // TODO: las 10 ciudades más visitadas en cada caso, y las 10 de mayor grado
+
+    cout << "Las 10 más visitadas (random walk uniforme):\n";
+    imprimir10MasVisitadas(g, visitas);
+
+    cout << "Las 10 más visitadas (random walk por distancia):\n";
+    imprimir10MasVisitadas(g, visitasPorDistancia);
+
+    vector<string> ciudades = g.get_vertices();
+    int n = (int)ciudades.size();
+    vector<int> elegidaGrado(n, 0);
+    cout << "Las 10 de mayor grado:\n";
+    for (int puesto = 1; puesto <= 10; puesto++) {
+        int mejor = -1;
+        for (int i = 0; i < n; i++) {
+            if (elegidaGrado[i] == 1) continue;
+            if (mejor == -1 || g.get_neighbors(ciudades[i]).size() >
+                                   g.get_neighbors(ciudades[mejor]).size()) mejor = i;
+        }
+        elegidaGrado[mejor] = 1;
+        cout << "  " << puesto << ". " << ciudades[mejor] << ": grado "
+             << g.get_neighbors(ciudades[mejor]).size() << "\n";
+    }
+
+
 
     cout << "\n=== Ejercicio 6 ===\n";
     analisisLibre(g);
