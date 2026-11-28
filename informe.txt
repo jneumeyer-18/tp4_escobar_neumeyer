@@ -2,6 +2,7 @@ Informe
 Escobar, Neumeyer
 Trabajo Practico 4 - Algoritmos y estructura de datos.
  
+
     1. ¿Cuántas componentes conexas tiene el grafo? ¿Cuál es el tamaño de la más grande? ¿Qué ciudades
     quedan fuera de ella? ¿Tiene sentido, mirando un mapa?
 
@@ -22,13 +23,14 @@ Mirando un mapa tiene sentido, ya que las ciudades continentales están conectad
 islas forman otras componentes conexas porque están separadas por agua de la masa continental, 
 entonces no se pueden conectar por tierra con las otras ciudades.
 
+
     2. Calcular las distancias del camino mínimo entre todos los pares de ciudades, teniendo en cuenta 
     los pesos de las aristas: la longitud de un camino es la suma de las distancias de sus rutas.
     • ¿Qué algoritmo usaron? ¿Qué orden tiene calcular todas las distancias?
     • ¿Por qué BFS no alcanza para este problema?
     • ¿Cuál es la distancia mínima entre Buenos Aires y La Quiaca? ¿Y entre Buenos Aires y Ushuaia?
- 
-Usamos el algoritmo de Dijkstra, que se puede usar porque todas las distancias son no negativas. 
+
+Usamos el algoritmo de Dijkstra, que se puede usar porque como son distancias no son negativas. 
 Primero calculamos la componente conexa de cada ciudad con BFS (como en el ejercicio 1).
 Después corremos Dijkstra desde cada ciudad, mirando sólo las ciudades de su misma componente.
 Cada Dijkstra, buscando en cada paso la ciudad más cercana con un recorrido de todas las ciudades, 
@@ -44,6 +46,7 @@ En cambio, Dijkstra encuentra el camino más corto sumando los kilómetros de ca
 Buenos Aires - La Quiaca: 1943 km
 Buenos Aires - Ushuaia: no hay camino (están en componentes distintas)
  
+
     3. ¿Cuántos triángulos tiene el grafo? Cada triángulo se cuenta una sola vez: {A, B, C} y {B, C, A} 
     son el mismo. ¿Qué orden tiene el algoritmo?
 
@@ -51,7 +54,7 @@ Buenos Aires - Ushuaia: no hay camino (están en componentes distintas)
 Triángulos: 2281
  
 Para contarlos nos paramos en cada ciudad A, recorremos todos los pares de sus vecinos (B, C) y, si B 
-y C también están unidas por una ruta, sumamos un triángulo. Cuando terminamos con a, la "borramos" 
+y C también están unidas por una ruta, sumamos un triángulo. Cuando terminamos con A, la "borramos" 
 (la marcamos como procesada y la salteamos de ahí en adelante), así cada triángulo se cuenta una sola vez.
 El orden es O(n^3) en el peor caso, ya que para cada una de las n ciudades recorremos todos los pares de 
 sus vecinos, o sea n ciudades x hasta n^2 pares de vecinos cada una (chequear si dos vecinos están unidos 
@@ -59,6 +62,7 @@ por una ruta es O(1), porque usamos una tabla de hash). Como generalmente el cos
 o sea O(m · dmax), siendo dmax la mayor cantidad de vecinos de una ciudad. 
 En nuestro grafo cada ciudad tiene como máximo 15 vecinos, así que el costo sería mucho menor que n^3.
  
+
     4. Utilicen el ejercicio 2 para calcular el diámetro del grafo, en km. ¿Entre qué dos ciudades se da? 
     ¿Qué hacen con los pares de ciudades que no están conectadas por ningún camino?
 
@@ -68,21 +72,16 @@ Diámetro: 4131 km, entre La Quiaca y Veintiocho de Noviembre
 Para calcularlo buscamos el máximo de las distancias mínimas del ejercicio 2.
 Con los pares de ciudades que no están conectadas por ningún camino, nosotros los ignoramos y no los 
 tuvimos en cuenta para calcular el diámetro, ya que si no los ignorábamos nos iba a dar infinito, 
-porque INFINITO es el número más grande de la matriz de distancias, y como no existe ningún camino entre 
-ellos, no hay nada que medir, porque no existe distancia mínima.
+porque INFINITO es el número más grande de la matriz de distancias, y como no existe ningún camino 
+entre ellos, no hay nada que medir, porque no existe distancia mínima.
  
+
     5. Hagan muchos random walks (por ejemplo, 10 000 walks de largo 100) y cuenten cuántas veces aparece 
     cada ciudad en total. Las que más aparecen son las más centrales.
     • ¿Cuáles son las 10 ciudades más centrales según este criterio?
     • Compárenlas con las 10 ciudades de mayor grado. ¿Qué observan? ¿Por qué creen que pasa?
     • Cambien el random walk para que el vecino se elija con probabilidad inversamente proporcional a la 
     distancia: las rutas cortas son más probables que las largas. ¿Cambia el resultado?
- 
-Hicimos 10.000 random walks de largo 100. Cada walk empieza en una ciudad elegida al azar y en cada paso 
-se mueve a un vecino elegido al azar, todos con la misma probabilidad (puede volver a la ciudad de la que 
-viene). Contamos la ciudad de partida y cada ciudad a la que se llega. Si el walk empieza en una ciudad 
-sin rutas (Martín García), no se puede mover y termina ahí. Usamos una numero fijo (42) para que el 
-resultado sea siempre el mismo.
  
 === Ejercicio 5 ===
 Las 10 más visitadas (random walk uniforme):
@@ -118,6 +117,12 @@ Las 10 de mayor grado:
   8. San Pedro de Jujuy: grado 13
   9. Libertador General San Martín: grado 13
   10. Purmamarca: grado 13
+
+Hicimos 10.000 random walks de largo 100. Cada walk empieza en una ciudad elegida al azar y en cada paso 
+se mueve a un vecino elegido al azar, todos con la misma probabilidad, se puede volver a la ciudad de la 
+que viene. Contamos la ciudad de partida y cada ciudad a la que se llega. Si el walk empieza en una ciudad 
+sin rutas, no se puede mover y termina ahí. Usamos una numero fijo (67) para que el resultado sea siempre 
+el mismo.
  
 Comparándolas con las ciudades de mayor grado, observamos que la mayoría de las ciudades de mayor grado 
 son las más centrales según este criterio. Creemos que pasa debido a que, al tener más vecinos, hay más 
@@ -129,6 +134,7 @@ grado 13.
 El resultado cambia mucho, ya que las ciudades que tienen una distancia muy corta entre sí terminan 
 siendo las más visitadas, porque la probabilidad de usar esa ruta es mucho mayor.
  
+
     6. Analisis libre
 Para nuestro análisis libre del grafo, lo que quisimos hacer fue determinar la cantidad mínima de 
 colores necesarios para colorear las ciudades del grafo, de manera tal que dos ciudades conectadas 
@@ -143,6 +149,6 @@ Greedy (de mayor a menor grado): 9 colores
 Las 9 ciudades de Misiones están todas conectadas entre sí, así que con menos de 9 colores es imposible.
 Conclusión: el mínimo es exactamente 9 colores.
  
-El greedy sólo demuestra que con 9 colores alcanza, pero no que sea el mínimo. Para saber que 9 es el 
+El Greedy sólo demuestra que con 9 colores alcanza, pero no que sea el mínimo. Para saber que 9 es el 
 mínimo usamos las 9 ciudades de Misiones, ya que como todas tienen ruta con todas, cada una necesita un 
 color distinto, así que con menos de 9 es imposible. Juntando las dos cosas, el mínimo es exactamente 9.

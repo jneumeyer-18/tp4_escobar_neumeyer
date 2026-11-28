@@ -127,9 +127,8 @@ vector<vector<string>> componentesConexas(const GrafoCiudades& g) {
 
 const int INFINITO = 1000000000;
 
-// dist[i][j]: distancia mínima en km entre la ciudad i y la ciudad j, con
-// las ciudades numeradas en el orden de g.get_vertices() (INFINITO si no hay
-// camino).
+// dist[i][j] es la distancia mínima en km entre la ciudad i y la ciudad j, con
+// las ciudades numeradas en el orden de g.get_vertices()
 vector<vector<int>> distanciasTodosConTodos(const GrafoCiudades& g) {
     vector<string> ciudades = g.get_vertices();
     int n = (int)ciudades.size();
@@ -214,8 +213,8 @@ int contarTriangulos(const GrafoCiudades& g) {
         }
     }
 
-    // Idea: me paro en a y cuento todos los triángulos que la contienen
-    // después borro a, para que ningún triángulo se vuelva a contar
+    // la idea es pararnos en a y contar todos los triángulos que la contienen
+    // después se borra a, para que ningún triángulo se vuelva a contar
     vector<int> borrado(n, 0);  
     int triangulos = 0;
 
@@ -282,7 +281,7 @@ Diametro diametro(const GrafoCiudades& g, const vector<vector<int>>& dist) {
 //          EJERCICIO 5: RANDOM WALKS Y LA CIUDAD MÁS CENTRAL
 // ================================================================
 
-// visitas[c]: cantidad de veces que los random walks pasaron por c.
+// visitas[c] es la cantidad de veces que los random walks pasaron por c.
 using Visitas = unordered_map<string, int>;
 
 Visitas randomWalks(const GrafoCiudades& g, int cantidad, int largo) {
@@ -298,9 +297,8 @@ Visitas randomWalks(const GrafoCiudades& g, int cantidad, int largo) {
         }
     }
 
-    // Generador de números al azar, con semilla fija para que el resultado
-    // sea el mismo cada vez que corremos el programa.
-    mt19937 generador(42);
+    // generador de números al azar, con un punto fija para que el resultado siempre.
+    mt19937 generador(67);
 
     
     vector<int> cuenta(n, 0);
@@ -316,8 +314,7 @@ Visitas randomWalks(const GrafoCiudades& g, int cantidad, int largo) {
            
             if (grado == 0) break;
 
-            // Elegir un vecino al azar, todos con la misma probabilidad:
-            // como random.randint(0, grado - 1)
+            // elegir un vecino al azar, todos con la misma probabilidad
             uniform_int_distribution<int> elegir(0, grado - 1);
             actual = vecino[actual][elegir(generador)];
             cuenta[actual]++;
@@ -336,7 +333,6 @@ Visitas randomWalksPorDistancia(const GrafoCiudades& g, int cantidad, int largo)
     vector<string> ciudades = g.get_vertices();
     int n = (int)ciudades.size();
 
-    
     vector<vector<int>> vecino(n);
     vector<vector<int>> peso(n);
     for (int i = 0; i < n; i++) {
@@ -347,7 +343,7 @@ Visitas randomWalksPorDistancia(const GrafoCiudades& g, int cantidad, int largo)
         }
     }
 
-    mt19937 generador(42);
+    mt19937 generador(67);
 
     vector<int> cuenta(n, 0);
 
@@ -365,8 +361,6 @@ Visitas randomWalksPorDistancia(const GrafoCiudades& g, int cantidad, int largo)
                 total += 1.0 / peso[actual][j];
             }
 
-            // Tiro un número real al azar entre 0 y total, y me fijo en qué
-            // "tramo" cae: cada vecino ocupa un tramo de largo 1 / km.
             uniform_real_distribution<double> tiro(0.0, total);
             double r = tiro(generador);
 
@@ -384,10 +378,6 @@ Visitas randomWalksPorDistancia(const GrafoCiudades& g, int cantidad, int largo)
             cuenta[actual]++;
         }
     }
-
-    
-
-
 
     Visitas visitas;
     for (int i = 0; i < n; i++) {
@@ -500,7 +490,6 @@ int main(int argc, char* argv[]) {
     }
     cout << "Tamaño de la más grande: " << componentes[mayor].size() << "\n";
 
-    // Imprimir las ciudades de las demás componentes
     cout << "Ciudades fuera de la más grande:\n";
     for (int i = 0; i < (int)componentes.size(); i++) {
         if (i == mayor) continue;
@@ -529,7 +518,6 @@ int main(int argc, char* argv[]) {
     } else {
         cout << "Buenos Aires - Ushuaia: " << dist[ba][us] << " km\n";
     }
-
 
     cout << "\n=== Ejercicio 3 ===\n";
     cout << "Triángulos: " << contarTriangulos(g) << "\n";
@@ -564,8 +552,6 @@ int main(int argc, char* argv[]) {
         cout << "  " << puesto << ". " << ciudades[mejor] << ": grado "
              << g.get_neighbors(ciudades[mejor]).size() << "\n";
     }
-
-
 
     cout << "\n=== Ejercicio 6 ===\n";
     analisisLibre(g);
